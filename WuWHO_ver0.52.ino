@@ -4,7 +4,7 @@
 //Robert James Hastings - 117757785
 //117757785@umail.ucc.ie
 
-//Inspired "ESP32 Wi-Fi Sniffer" by Łukasz Podkalicki
+//Inspired by "ESP32 Wi-Fi Sniffer" by Łukasz Podkalicki
 //https://github.com/ESP-EOS/ESP32-WiFi-Sniffer 
 
 //Built using the ESPRESSIF Wi-Fi API
