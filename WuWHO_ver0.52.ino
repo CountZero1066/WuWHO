@@ -24,14 +24,14 @@
 
 //________________Declaring Variables__________
 //local AP details
-const char* ssid = "VM5190883";
-const char* wifipassword =  "CXb3cvk2dpea";
+const char* ssid = "###########";               //Network SSID goes here
+const char* wifipassword =  "###########";      //Network password goes here
 
 //database server details
-IPAddress MySQL_server_address(188,141,18,170); 
-char MySQL_user[] = "root";             
-char MySQL_password[] = "straylight";  
-int MySQL_port = 3306;    
+IPAddress MySQL_server_address(###,###,##,###); //IP address of database server goes here
+char MySQL_user[] = "###########";              //database username goes here
+char MySQL_password[] = "###########";          //database password goes here
+int MySQL_port = 3306;                          //Port number database server is listening to goes here
 
 //max num Wi-Fi channels to cycle through
 #define maxCh 13 
