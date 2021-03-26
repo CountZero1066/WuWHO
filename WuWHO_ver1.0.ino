@@ -1,16 +1,17 @@
 //Business Information Systems - BIS4
-//WuWHO Wi-Fi probe request interceptor ver0.1.0
-//22-March-2021
+//WuWHO Sensor ver0.1.0
+//26-March-2021
 //Robert James Hastings - 117757785
 //117757785@umail.ucc.ie
 
-//Inspired "ESP32 Wi-Fi Sniffer" by Łukasz Podkalicki
+//Inspired by "ESP32 Wi-Fi Sniffer" by Łukasz Podkalicki
 //https://github.com/ESP-EOS/ESP32-WiFi-Sniffer
 
 //Built using the ESPRESSIF Wi-Fi API
 //https://github.com/espressif/arduino-esp32/blob/master/tools/sdk/include/esp32/esp_wifi.h
 //https://docs.espressif.com/projects/esp-idf/en/release-v4.2/esp32/api-reference/network/esp_wifi.html
-
+//And using the ARM Mbed mbedtls/md.h library for SHA256 hashing
+//https://github.com/ARMmbed/mbedtls/blob/master/include/mbedtls/md.h
 
 /*
    ###############################################################
@@ -64,6 +65,7 @@ WiFiClient client;
 MySQL_Connection conn(&client);
 MySQL_Cursor* cursor;
 
+//leds are used only on the development board. not used in final version
 int ledred = 15;
 int ledgreen = 23;
 int curChannel = 1;
@@ -131,6 +133,7 @@ void check_for_WiFi_cred() {
   mem_ssid = preferences.getString("flash_ssid", "");
   mem_pass = preferences.getString("flash_password", "");
   delay(2000);
+   //is anything saved to the memory addresses associated with the credentials
   if (mem_ssid == "" || mem_pass == "") {
     Serial.println("No credentials found");
     Serial.println("Enter New Credentials via Bluetooth");
@@ -155,7 +158,7 @@ void bluetooth_com_SSID() {
   while (bt_ssid.length() < 1) {
     if (SerialBT.available()) {
       bt_ssid = SerialBT.readString();
-
+//check for input data
       if (bt_ssid.length() > 1) {
         Serial.println(bt_ssid);
 
@@ -231,6 +234,7 @@ void Re_enter_net_cred() {
 
 
 //____________________Format Bluetooth Serial Input Data_______________
+//received serial data was found to include whitespace, the following function removes said whitespace
 String format_AP_creds(String string_to_format) {
   String shave_whitespace;
 
@@ -245,6 +249,7 @@ String format_AP_creds(String string_to_format) {
 }
 
 //____________________Test WiFi Credentials____________________________
+//check if received AP credentials work when tested against the WiFi.begin function. If yes, then save credentials to flash
 void wifi_test_network(String ssid, String wifipassword, bool convert) {
 
   String formatted_ssid;
@@ -252,7 +257,7 @@ void wifi_test_network(String ssid, String wifipassword, bool convert) {
 
   if (convert == true) {
     formatted_ssid = format_AP_creds(ssid);
-    formatted_password = format_AP_creds(wifipassword);
+    formatted_password = format_AP_creds(wifipassword); 
   } else {
     formatted_ssid = ssid;
     formatted_password = wifipassword;
@@ -261,7 +266,7 @@ void wifi_test_network(String ssid, String wifipassword, bool convert) {
   WiFi.begin(formatted_ssid.c_str(), formatted_password.c_str());
   int attempt_loop = 0;
 
-  while ((WiFi.status() != WL_CONNECTED) && (attempt_loop < 20)) {
+  while ((WiFi.status() != WL_CONNECTED) && (attempt_loop < 20)) { //test credentials, but provide method for failed attempt to escape loop
     LCD_Display("testing...", 10, 1);
     delay(500);
     Serial.println("Testing Wi-Fi conn");
@@ -323,7 +328,7 @@ String Hash_data(char mac_string[]) {
 
 //____________________LCD____________________________
 void LCD_Display(String DisplayText, int TimeDelay, int TextScale) {
-
+//send text to display, how long in ms you want the OLED  to display text and text size as parameters
   display.clearDisplay();
 
   display.setTextSize(TextScale);
@@ -440,8 +445,8 @@ void connect_to_mysql() {
 
 //__________________Main Program Loop_______________________
 void loop() {
-  //Hash_data();
-
+//main program loop
+   
   enter_promiscuous_mode();
 
   int cycle = 0;
@@ -465,14 +470,14 @@ void loop() {
   digitalWrite(ledgreen, HIGH);
   connect_to_mysql();
 
-
+//used for adding terminating semi colon to statement
   Insert_Statement += "('end of statement', 0, now()); ";
-  
+  //char array of 6000 characters is sufficient for testing
   char sql_insert_stat[6000];
   strncpy(sql_insert_stat, Insert_Statement.c_str(), sizeof(sql_insert_stat));
   sql_insert_stat[sizeof(sql_insert_stat) - 1] = '\0';
 
-
+//database insert
   if (conn.connected())
     cursor->execute(sql_insert_stat);
 
